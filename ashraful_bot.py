@@ -2,7 +2,10 @@ import logging
 import json
 import os
 import random
+import asyncio
+import threading
 from datetime import datetime
+from apscheduler.schedulers.background import BackgroundScheduler
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, ContextTypes, filters
 import google.generativeai as genai
@@ -16,6 +19,8 @@ genai.configure(api_key=GEMINI_API_KEY)
 gemini = genai.GenerativeModel("gemini-1.5-flash")
 logging.basicConfig(level=logging.INFO)
 user_state = {}
+main_loop = None
+main_bot = None
 
 def load_tasks():
     try:
@@ -95,10 +100,7 @@ async def button_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             tasks.append({"name": state["name"], "time": state["time"], "days": ["প্রতিদিন"]})
             save_tasks(tasks)
             user_state.pop(chat_id, None)
-            await query.message.reply_text(
-                f"Task সেভ!\n{state['name']}\n{state['time']}\nপ্রতিদিন",
-                reply_markup=main_menu()
-            )
+            await query.message.reply_text(f"Task সেভ!\n{state['name']}\n{state['time']}\nপ্রতিদিন", reply_markup=main_menu())
 
     elif data == "back":
         await query.message.reply_text("কী করতে চাও?", reply_markup=main_menu())
@@ -138,10 +140,12 @@ async def message_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("কী করতে চাও?", reply_markup=main_menu())
 
-async def send_reminders(context: ContextTypes.DEFAULT_TYPE):
+def check_reminders():
+    global main_loop, main_bot
+    if main_loop is None or main_bot is None:
+        return
     tasks = load_tasks()
-    now = datetime.now()
-    current_time = now.strftime("%H:%M")
+    current_time = datetime.now().strftime("%H:%M")
     msgs = [
         "ভাই! এখন {name} এর সময়! উঠুন!",
         "{name} এখনই শুরু করুন ভাই!",
@@ -150,19 +154,27 @@ async def send_reminders(context: ContextTypes.DEFAULT_TYPE):
     for task in tasks:
         if task["time"] == current_time:
             msg = random.choice(msgs).format(name=task["name"])
-            try:
-                await context.bot.send_message(chat_id=YOUR_CHAT_ID, text=msg)
-            except Exception as e:
-                logging.error(f"Reminder error: {e}")
+            asyncio.run_coroutine_threadsafe(
+                main_bot.send_message(chat_id=YOUR_CHAT_ID, text=msg),
+                main_loop
+            )
 
-def main():
+async def run_bot():
+    global main_loop, main_bot
     app = Application.builder().token(TELEGRAM_TOKEN).build()
+    main_bot = app.bot
+    main_loop = asyncio.get_event_loop()
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
-    app.job_queue.run_repeating(send_reminders, interval=60, first=15)
+
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(check_reminders, 'interval', minutes=1)
+    scheduler.start()
+
     print("Bot চালু!")
-    app.run_polling(drop_pending_updates=True)
+    await app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(run_bot())
