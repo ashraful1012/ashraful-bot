@@ -121,24 +121,58 @@ def main_menu():
 
     keyboard = [
 
-        [
-            InlineKeyboardButton("➕ Add Task", callback_data="add_task"),
-            InlineKeyboardButton("📋 Tasks", callback_data="list_tasks")
-        ],
+    [
+        InlineKeyboardButton(
+            "➕ Add Task",
+            callback_data="add_task"
+        ),
 
-        [
-            InlineKeyboardButton("🔥 Focus Mode", callback_data="focus_mode"),
-            InlineKeyboardButton("📊 Stats", callback_data="stats")
-        ],
+        InlineKeyboardButton(
+            "📋 Tasks",
+            callback_data="show_tasks"
+        )
+    ],
 
-        [
-            InlineKeyboardButton("🤖 AI Assistant", callback_data="chat_ai")
-        ],
+    [
+        InlineKeyboardButton(
+            "🔥 Focus Mode",
+            callback_data="focus_mode"
+        ),
 
-        [
-            InlineKeyboardButton("🗑 Delete Task", callback_data="delete_task")
-        ]
+        InlineKeyboardButton(
+            "📊 Stats",
+            callback_data="stats"
+        )
+    ],
+
+    [
+        InlineKeyboardButton(
+            "📚 Exam Countdown",
+            callback_data="exam_countdown"
+        )
+    ],
+
+    [
+        InlineKeyboardButton(
+            "🎯 Daily Report",
+            callback_data="daily_report"
+        )
+    ],
+
+    [
+        InlineKeyboardButton(
+            "🤖 AI Assistant",
+            callback_data="ai_chat"
+        )
+    ],
+
+    [
+        InlineKeyboardButton(
+            "🗑 Delete Task",
+            callback_data="delete_task"
+        )
     ]
+]
 
     return InlineKeyboardMarkup(keyboard)
 
@@ -268,6 +302,38 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # STATS
 
     elif data == "stats":
+        elif data == "exam_countdown":
+
+    today = datetime.now().date()
+
+    exam = datetime.strptime(
+        EXAM_DATE,
+        "%Y-%m-%d"
+    ).date()
+
+    days_left = (exam - today).days
+
+    await query.message.reply_text(
+        f"📚 Exam Countdown\n\n⏳ {days_left} days left 😄",
+        reply_markup=main_menu()
+    )
+elif data == "daily_report":
+
+    tasks = load_tasks()
+
+    stats = load_stats()
+
+    msg = (
+        "🎯 Daily Report\n\n"
+        f"📌 Tasks: {len(tasks)}\n"
+        f"🔥 Focus Sessions: {stats['focus_sessions']}\n"
+        f"✅ Completed: {stats['completed']}"
+    )
+
+    await query.message.reply_text(
+        msg,
+        reply_markup=main_menu()
+    )
 
     tasks = load_tasks()
 
