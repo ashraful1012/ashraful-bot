@@ -9,7 +9,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQu
 import google.generativeai as genai
 
 TELEGRAM_TOKEN = "8899945317:AAFd-hgwL6x21dJ6F8vUJmFL8o7muBgM54E"
-GEMINI_API_KEY = "AIzaSyBwc1esYQ-wbWLZH442vCw2YmpkHahcbB0"
+GEMINI_API_KEY = "AIzaSyBjbucBgNwMYWm1pAqSueQVHso2YRrOGpU"
 YOUR_CHAT_ID = 1127540715
 TASKS_FILE = "tasks.json"
 
