@@ -3,4 +3,4 @@ openai==1.30.1
 pytz
 APScheduler
 httpx==0.25.2
-gtts
+gTTS
