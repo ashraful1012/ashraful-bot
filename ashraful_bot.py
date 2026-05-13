@@ -26,8 +26,8 @@ from telegram.ext import (
 # TOKENS
 # ======================================
 
-TELEGRAM_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
-GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"
+TELEGRAM_TOKEN = "8899945317:AAFd-hgwL6x21dJ6F8vUJmFL8o7muBgM54E"
+GEMINI_API_KEY = "AIzaSyBjbucBgNwMYWm1pAqSueQVHso2YRrOGpU"
 
 YOUR_CHAT_ID = 1127540715
 TASKS_FILE = "tasks.json"
