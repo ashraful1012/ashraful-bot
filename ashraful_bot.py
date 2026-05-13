@@ -27,8 +27,7 @@ from telegram.ext import (
 
 TELEGRAM_TOKEN = "8899945317:AAFd-hgwL6x21dJ6F8vUJmFL8o7muBgM54E"
 
-OPENROUTER_API_KEY = os.getenv("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")
-
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 YOUR_CHAT_ID = 1127540715
 
 TASKS_FILE = "tasks.json"
