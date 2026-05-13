@@ -1,4 +1,6 @@
-python-telegram-bot[job-queue]==20.7
-google-generativeai==0.7.2
+```txt
 python-telegram-bot[job-queue]
+google-generativeai
+pytz
 APScheduler
+```
