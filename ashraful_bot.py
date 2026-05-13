@@ -1,7 +1,6 @@
 import logging
 import json
 import os
-import random
 from datetime import datetime
 
 import pytz
@@ -27,10 +26,21 @@ from telegram.ext import (
 # ======================================
 
 TELEGRAM_TOKEN = "8899945317:AAFd-hgwL6x21dJ6F8vUJmFL8o7muBgM54E"
-OPENAI_API_KEY = "AIzaSyBjbucBgNwMYWm1pAqSueQVHso2YRrOGpU"
+
+OPENROUTER_API_KEY = "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"
 
 YOUR_CHAT_ID = 1127540715
+
 TASKS_FILE = "tasks.json"
+
+# ======================================
+# OPENROUTER CLIENT
+# ======================================
+
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY
+)
 
 # ======================================
 # TIMEZONE
@@ -48,16 +58,6 @@ logging.basicConfig(
 )
 
 # ======================================
-# OPEN AI
-# ======================================
-
-OPENROUTER_API_KEY = "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"
-
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=OPENROUTER_API_KEY
-)
-# ======================================
 # MEMORY
 # ======================================
 
@@ -66,6 +66,7 @@ user_state = {}
 # ======================================
 # FILE FUNCTIONS
 # ======================================
+
 
 def load_tasks():
 
@@ -83,6 +84,7 @@ def load_tasks():
     return []
 
 
+
 def save_tasks(tasks):
 
     with open(TASKS_FILE, "w", encoding="utf-8") as f:
@@ -97,6 +99,7 @@ def save_tasks(tasks):
 # ======================================
 # MAIN MENU
 # ======================================
+
 
 def main_menu():
 
@@ -127,6 +130,7 @@ def main_menu():
 # START
 # ======================================
 
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
@@ -142,6 +146,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # BUTTON HANDLER
 # ======================================
 
+
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     query = update.callback_query
@@ -151,9 +156,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = query.message.chat_id
     data = query.data
 
-    # ==================================
     # ADD TASK
-    # ==================================
 
     if data == "add_task":
 
@@ -165,9 +168,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "📌 Task এর নাম লেখো 😄"
         )
 
-    # ==================================
-    # TASK LIST
-    # ==================================
+    # LIST TASKS
 
     elif data == "list_tasks":
 
@@ -196,9 +197,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=main_menu()
         )
 
-    # ==================================
     # DELETE TASK
-    # ==================================
 
     elif data == "delete_task":
 
@@ -229,9 +228,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
 
-    # ==================================
     # DELETE CONFIRM
-    # ==================================
 
     elif data.startswith("del_"):
 
@@ -252,9 +249,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_markup=main_menu()
             )
 
-    # ==================================
     # STATS
-    # ==================================
 
     elif data == "stats":
 
@@ -272,9 +267,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=main_menu()
         )
 
-    # ==================================
     # FOCUS MODE
-    # ==================================
 
     elif data == "focus_mode":
 
@@ -285,9 +278,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "💪 You can do it ভাই 😄"
         )
 
-    # ==================================
     # AI CHAT
-    # ==================================
 
     elif data == "chat_ai":
 
@@ -301,9 +292,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "ফিরে যেতে /start লেখো"
         )
 
-    # ==================================
     # EVERYDAY TASK
-    # ==================================
 
     elif data == "everyday":
 
@@ -335,6 +324,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # MESSAGE HANDLER
 # ======================================
 
+
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     chat_id = update.message.chat_id
@@ -343,35 +333,33 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     state = user_state.get(chat_id, {})
 
-    # ==================================
     # AI CHAT
-    # ==================================
 
     if state.get("step") == "chatting":
 
         await update.message.reply_text("🤖 Thinking...")
 
         try:
-           response = client.chat.completions.create(
-   model="deepseek/deepseek-chat-v3-0324:free",
 
-    messages=[
+            response = client.chat.completions.create(
 
-        {
-            "role": "system",
-            "content": "তুমি Ashraful ভাই এর smart AI assistant। বাংলায় সুন্দরভাবে উত্তর দাও।"
-        },
+                model="deepseek/deepseek-chat-v3-0324:free",
 
-        {
-            "role": "user",
-            "content": text
-        }
-    ]
-)
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "তুমি Ashraful ভাই এর smart AI assistant। বাংলায় সুন্দরভাবে উত্তর দাও।"
+                    },
+                    {
+                        "role": "user",
+                        "content": text
+                    }
+                ]
+            )
 
-reply = response.choices[0].message.content
+            reply = response.choices[0].message.content
 
-await update.message.reply_text(reply)
+            await update.message.reply_text(reply)
 
         except Exception as e:
 
@@ -381,9 +369,7 @@ await update.message.reply_text(reply)
 
         return
 
-    # ==================================
     # TASK NAME
-    # ==================================
 
     if state.get("step") == "waiting_name":
 
@@ -401,9 +387,7 @@ await update.message.reply_text(reply)
 
         return
 
-    # ==================================
     # TASK TIME
-    # ==================================
 
     if state.get("step") == "waiting_time":
 
@@ -444,6 +428,7 @@ await update.message.reply_text(reply)
 # ======================================
 # SEND REMINDERS
 # ======================================
+
 
 async def send_reminders(context: ContextTypes.DEFAULT_TYPE):
 
@@ -494,6 +479,7 @@ async def send_reminders(context: ContextTypes.DEFAULT_TYPE):
 # MAIN
 # ======================================
 
+
 def main():
 
     app = Application.builder().token(TELEGRAM_TOKEN).build()
@@ -513,8 +499,6 @@ def main():
         )
     )
 
-    # Reminder checker
-
     app.job_queue.run_repeating(
         send_reminders,
         interval=20,
@@ -528,6 +512,7 @@ def main():
 # ======================================
 # RUN
 # ======================================
+
 
 if __name__ == "__main__":
 
