@@ -1,6 +1,8 @@
 import logging
 import json
 import os
+from gtts import gTTS
+import asyncio
 from datetime import datetime
 
 import pytz
@@ -30,7 +32,8 @@ TELEGRAM_TOKEN = "8899945317:AAFd-hgwL6x21dJ6F8vUJmFL8o7muBgM54E"
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 YOUR_CHAT_ID = 1127540715
 
-TASKS_FILE = "tasks.json"
+STATS_FILE = "stats.json"
+EXAM_DATE = "2026-05-20"
 
 # ======================================
 # OPENROUTER CLIENT
@@ -86,15 +89,29 @@ def load_tasks():
 
 def save_tasks(tasks):
 
-    with open(TASKS_FILE, "w", encoding="utf-8") as f:
+   def load_stats():
 
-        json.dump(
-            tasks,
-            f,
-            ensure_ascii=False,
-            indent=2
-        )
+    try:
 
+        if os.path.exists(STATS_FILE):
+
+            with open(STATS_FILE, "r") as f:
+                return json.load(f)
+
+    except:
+        pass
+
+    return {
+        "completed": 0,
+        "focus_sessions": 0
+    }
+
+
+def save_stats(stats):
+
+    with open(STATS_FILE, "w") as f:
+
+        json.dump(stats, f, indent=2)
 # ======================================
 # MAIN MENU
 # ======================================
@@ -252,30 +269,51 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif data == "stats":
 
-        tasks = load_tasks()
+    tasks = load_tasks()
 
-        msg = (
-            "📊 Productivity Dashboard\n\n"
-            f"📌 Total Tasks: {len(tasks)}\n"
-            "🔥 Focus Level: High\n"
-            "📚 Keep studying consistently 😄"
-        )
+    stats = load_stats()
 
-        await query.message.reply_text(
-            msg,
-            reply_markup=main_menu()
-        )
+    msg = (
+        "📊 Productivity Dashboard\n\n"
+        f"📌 Total Tasks: {len(tasks)}\n"
+        f"🔥 Focus Sessions: {stats['focus_sessions']}\n"
+        f"✅ Completed Tasks: {stats['completed']}\n\n"
+        "💪 Keep grinding ভাই 😄"
+    )
+
+    await query.message.reply_text(
+        msg,
+        reply_markup=main_menu()
+    )
 
     # FOCUS MODE
 
     elif data == "focus_mode":
 
-        await query.message.reply_text(
-            "🔥 Focus Mode Activated\n\n"
-            "📚 Study for 45 minutes\n"
-            "📵 Avoid distractions\n\n"
-            "💪 You can do it ভাই 😄"
+    stats = load_stats()
+
+    stats["focus_sessions"] += 1
+
+    save_stats(stats)
+
+    await query.message.reply_text(
+        "🔥 Pomodoro Started\n\n"
+        "📚 Study: 50 min\n"
+        "☕ Break: 10 min\n\n"
+        "💪 Focus mode active"
+    )
+
+    async def break_alert(context):
+
+        await context.bot.send_message(
+            chat_id=YOUR_CHAT_ID,
+            text="☕ Break Time ভাই 😄"
         )
+
+    context.job_queue.run_once(
+        break_alert,
+        when=3000
+    )
 
     # AI CHAT
 
@@ -428,7 +466,26 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # SEND REMINDERS
 # ======================================
 
+async def send_voice_reminder(bot, chat_id, text):
 
+    try:
+
+        tts = gTTS(text=text, lang="bn")
+
+        filename = "voice.mp3"
+
+        tts.save(filename)
+
+        with open(filename, "rb") as audio:
+
+            await bot.send_voice(
+                chat_id=chat_id,
+                voice=audio
+            )
+
+    except Exception as e:
+
+        print("Voice Error:", e)
 async def send_reminders(context: ContextTypes.DEFAULT_TYPE):
 
     print("Checking reminders...")
@@ -460,7 +517,16 @@ async def send_reminders(context: ContextTypes.DEFAULT_TYPE):
                     chat_id=YOUR_CHAT_ID,
                     text=msg
                 )
+voice_text = (
+    f"Ashraful ভাই। "
+    f"{task['name']} করার সময় হয়ে গেছে"
+)
 
+await send_voice_reminder(
+    context.bot,
+    YOUR_CHAT_ID,
+    voice_text
+)
                 print("Reminder sent!")
 
                 task["last_sent"] = today
