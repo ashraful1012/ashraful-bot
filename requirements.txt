@@ -1,7 +1,6 @@
-```txt id="q1j8ma"
+txt id="q1j8ma"
 python-telegram-bot[job-queue]==20.7
 google-generativeai
 pytz
 APScheduler
 httpx==0.25.2
-```
