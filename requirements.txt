@@ -1,5 +1,5 @@
-```txt
-python-telegram-bot==20.7
+```txt id="q1j8ma"
+python-telegram-bot[job-queue]==20.7
 google-generativeai
 pytz
 APScheduler
