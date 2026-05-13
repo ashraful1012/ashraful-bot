@@ -1,13 +1,13 @@
 import logging
 import json
 import os
+import asyncio
 from datetime import datetime
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application, CommandHandler, MessageHandler,
     CallbackQueryHandler, ContextTypes, filters
 )
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import google.generativeai as genai
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
@@ -256,6 +256,10 @@ async def send_reminders(app):
                     parse_mode="Markdown"
                 )
 
+# ─── REMINDER JOB ─────────────────────────────────────────────────────────────
+async def reminder_job(context):
+    await send_reminders(context.application)
+
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 def main():
     app = Application.builder().token(TELEGRAM_TOKEN).build()
@@ -264,15 +268,8 @@ def main():
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
 
-    # Scheduler — check every minute
-    scheduler = AsyncIOScheduler()
-    scheduler.add_job(
-        send_reminders,
-        "interval",
-        minutes=1,
-        args=[app]
-    )
-    scheduler.start()
+    # Built-in job queue — check every 60 seconds
+    app.job_queue.run_repeating(reminder_job, interval=60, first=10)
 
     print("✅ Bot চালু হয়েছে! Telegram এ /start লেখো।")
     app.run_polling(drop_pending_updates=True)
