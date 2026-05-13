@@ -352,9 +352,8 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("🤖 Thinking...")
 
         try:
-response = client.chat.completions.create(
-
-    model="deepseek/deepseek-chat-v3-0324:free",
+           response = client.chat.completions.create(
+   model="deepseek/deepseek-chat-v3-0324:free",
 
     messages=[
 
