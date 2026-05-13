@@ -342,7 +342,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             response = client.chat.completions.create(
 
-                model="deepseek/deepseek-chat-v3-0324:free",
+                model="openai/gpt-oss-120b:free",
 
                 messages=[
                     {
