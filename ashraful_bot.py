@@ -27,7 +27,7 @@ from telegram.ext import (
 # ======================================
 
 TELEGRAM_TOKEN = "8899945317:AAFd-hgwL6x21dJ6F8vUJmFL8o7muBgM54E"
-GEMINI_API_KEY = "AIzaSyBjbucBgNwMYWm1pAqSueQVHso2YRrOGpU"
+OPENAI_API_KEY = "AIzaSyBjbucBgNwMYWm1pAqSueQVHso2YRrOGpU"
 
 YOUR_CHAT_ID = 1127540715
 TASKS_FILE = "tasks.json"
@@ -48,10 +48,10 @@ logging.basicConfig(
 )
 
 # ======================================
-# GEMINI AI
+# OPEN AI
 # ======================================
 
-OPENROUTER_API_KEY = "YOUR_OPENROUTER_API_KEY"
+OPENROUTER_API_KEY = "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"
 
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
