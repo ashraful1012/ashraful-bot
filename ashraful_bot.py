@@ -52,7 +52,7 @@ logging.basicConfig(
 # ======================================
 
 genai.configure(api_key=GEMINI_API_KEY)
-gemini = genai.GenerativeModel("gemini-1.5-flash")
+gemini = genai.GenerativeModel("models/gemini-1.5-pro")
 
 # ======================================
 # MEMORY
