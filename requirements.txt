@@ -1,5 +1,5 @@
 python-telegram-bot[job-queue]==20.7
-google-generativeai
+google-generativeai==0.8.3
 pytz
 APScheduler
 httpx==0.25.2
