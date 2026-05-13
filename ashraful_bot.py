@@ -148,6 +148,7 @@ async def send_reminders(context: ContextTypes.DEFAULT_TYPE):
         if task["time"] == current_time:
             msg = random.choice(msgs).format(name=task["name"])
             await context.bot.send_message(chat_id=YOUR_CHAT_ID, text=msg)
+            print("Reminder checker started!")
 
 def main():
     app = Application.builder().token(TELEGRAM_TOKEN).build()
