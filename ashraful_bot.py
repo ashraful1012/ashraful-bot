@@ -5,7 +5,7 @@ import random
 from datetime import datetime
 
 import pytz
-import google.generativeai as genai
+from openai import OpenAI
 
 from telegram import (
     Update,
@@ -51,8 +51,12 @@ logging.basicConfig(
 # GEMINI AI
 # ======================================
 
-genai.configure(api_key=GEMINI_API_KEY)
-gemini = genai.GenerativeModel("gemini-2.0-flash")
+OPENROUTER_API_KEY = "YOUR_OPENROUTER_API_KEY"
+
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY
+)
 # ======================================
 # MEMORY
 # ======================================
@@ -348,12 +352,27 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("🤖 Thinking...")
 
         try:
+response = client.chat.completions.create(
 
-            response = gemini.generate_content(
-                f"তুমি Ashraful ভাই এর smart AI assistant। বাংলায় সুন্দরভাবে উত্তর দাও। প্রশ্ন: {text}"
-            )
+    model="deepseek/deepseek-chat-v3-0324:free",
 
-            await update.message.reply_text(response.text)
+    messages=[
+
+        {
+            "role": "system",
+            "content": "তুমি Ashraful ভাই এর smart AI assistant। বাংলায় সুন্দরভাবে উত্তর দাও।"
+        },
+
+        {
+            "role": "user",
+            "content": text
+        }
+    ]
+)
+
+reply = response.choices[0].message.content
+
+await update.message.reply_text(reply)
 
         except Exception as e:
 
